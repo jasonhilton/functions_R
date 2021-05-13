@@ -1,0 +1,313 @@
+---
+title: "Function Guidance"
+author: "Jason Hilton"
+institute: "University of Southampton"
+output:
+  xaringan::moon_reader:
+    lib_dir: libs
+    nature:
+      highlightStyle: github
+      highlightLines: true
+      countIncrementalSlides: false
+---
+class: inverse, center, middle
+
+# A Data Analysis Workflow
+
+
+
+
+
+---
+# Workflow
+
+Working with data generally involves an iterative workflow:
+
+
+- Write exploratory code in scripts 
+
+- Pull out code performing specific tasks into functions
+
+- Make this function as general as feasibly possible
+  + Applicable to the greatest number of cases
+  
+- Document your functions
+
+- Extract these functions into separate R files (perhaps in an `R` folder in your project
+
+- Use `source` in your analysis scripts to read in these functions
+
+- Turn your your functions into a [package]((https://r-pkgs.org/intro.html)) for others doing similar tasks
+
+
+---
+# What do we want from code?
+
+What are some properties of good code?
+
+
+--
+- It should do what I want it to
+
+- Other people should be able to understand it
+
+- It should be easy to work out what's wrong with it
+
+- It should be easy to test that it works
+
+- It should be easy to change
+
+
+---
+# What do we want from code?
+
+
+Less important:
+
+- It should be fast
+
+> Premature optimisation is the root of all evil
+
+
+--
+Most of the time you will spend on code will be writing, understanding, thinking and debugging.
+
+- Better to prioritise making this easier
+
+- Once you have working code that you can easily reason about, optimisation is easier in any case
+
+
+
+--
+Rstudio has a nice tool for [profiling](https://support.rstudio.com/hc/en-us/articles/218221837-Profiling-with-RStudio)
+
+
+
+---
+# Excuses
+
+Often researchers are reluctant to invest in making their code readable 
+
+> "Only I will use it" 
+
+You never know when a journal will ask for your code
+- Increasingly the norm in many disciplines
+
+Writing robust code to be read and used by others is likely to be an important skill in the wider world
+
+
+--
+The most important reader of your code is *Future You*
+
+> Have you ever looked back a your code and stuggled to remember what it was supposed to be doing?
+
+---
+# How do functions fit in?
+
+By breaking our code down into functions, we produce self-contained parts of our analysis process that we can understand in isolation
+
+- Humans are not good at dealing with lots of things all at once
+
+- We have a limited cognitive ability to process information
+
+- Dealing with functions one-by-one means we can focus our attention on the important parts
+
+- This also means that errors are easier to tracking down; we can examine inputs and outputs from particular functions
+  + Automated testing frameworks work better on small units of code
+
+
+- Function also help with optimisation
+  + Functions can be analysed to find the bottleneck, and the most expensive function can be optimised.
+
+---
+class: inverse, center, middle
+
+# Some Principles
+
+---
+# 'Clean Code'
+
+One questions that springs to mind is what should these functions look like.
+
+- How do we go about writing them?
+
+
+Some advice on software design in general is provided in the classic 
+*Clean Code* by Robert Martin. 
+
+- This is an extremely opinionated text - to the point of being dogamtic
+- It is not designed with R in mind, so not all of his proscriptions are valid 
+- It is somewhat old
+
+
+--
+That said, some of the principles can help us in writing functions in R
+
+
+
+---
+# Principles from 'Clean Code'
+
+
+Four principles relating to function can be useful to bear in mind:
+
+1. Functions should be small
+
+
+--
+2. Functions should do one thing only
+
+
+--
+3. Functions should have descriptive names
+
+
+--
+4. Functions should have few arguments
+
+
+
+---
+# Function Length
+
+Some fascinating analysis shows that the majority of functions in the R code-base are relatively short
+
+- The *median* function length is 12 lines
+
+- Most packages have one or more longer function, ~100 lines
+
+[https://nicercode.github.io/blog/2013-05-07-how-long-is-a-function/](https://nicercode.github.io/blog/2013-05-07-how-long-is-a-function/)
+
+
+--
+Why short functions? 
+
+- Short functions are easier to read
+- Short functions are easier to change
+- Short functions are easier to test
+- Short function may be more general, and more likely to find use elsewhere
+
+
+---
+# Function purpose
+
+> Functions should do one thing only
+
+As we mentioned, we (humans) are not good at concentrating on more than one thing.
+
+- Functions that have one purpose greatly reduce our cognitive load
+  + We don't have to keep everything else in mind when we write or read it
+
+- Testing parts of our analysis is easier if we can isolate each part in  one function
+  + Again, this applies also to automated testing systems like 
+
+- If we want to alter the behaviour of a particular part of our analysis, we alter only the relevant function
+
+
+
+---
+# Descriptive names
+
+> Functions should have descriptive names
+
+Function names should generally be verbs that describe what the function actually does.
+
+
+
+- If I come and read your code, it a function is called `do_stuff` I will be more confused than if it is called `find_optimium_theta`.
+
+- Argument names should similarly be informative:
+  - `n_parameters` is better than `k`
+
+
+--
+Generally, longer names are better than shorter names.
+
+- Autocomplete means you will not be slowed down by long names
+
+
+
+
+---
+# Number of arguments
+
+> Functions should have few arguments
+
+Functions with many arguments can be confusing to those unfamiliar with the function.
+
+- They are more difficult to call
+
+- Default behaviour may be unclear
+
+- The exact function of each argument might be difficult to determine
+
+
+--
+If you have lots of arguments, this might be a sign that your function is doing more than one thing.
+
+> In some cases, lots of arguments is a necessity, and you will see certainly see this in some base functions
+
+---
+# Dependencies should be explicit
+
+Some code relies on 'global variables', that might be defines at the top of a script.
+
+
+--
+Functions that use variables not passed explicitly as arguments are generally to be discouraged.
+
+
+- If an R function comes across a variable not present in the execution environment, it will look in the enclosing environment
+- This can make it difficult to predict function behaviour
+
+
+--
+Instead, pass in these variables as arguments.
+
+
+
+---
+# Rules are made to be broken
+
+> "A foolish consistency is the hobgoblin of little minds"
+
+The above rule are largely guidelines.
+
+- They won't necessarily make sense in every situation
+- They are also not necessarily valued by all coding professionals
+- If following them makes your code seem unnatural or difficult to read, then don't follow them.
+
+
+--
+There are a huge range of competing principles around how to write good code.
+
+These vary a lot by language and paradigm.
+
+
+--
+I do think that in many cases, the principles above can be valuable in writing functions in R.
+
+
+
+
+---
+# How to get better
+
+Sometimes it is difficult to work out the best way to proceed.
+
+
+--
+- Go back to old code an improve it
+
+- Read code in popular packages
+
+- Peer code review is often helpful - ask someone to look at your code
+
+- Commit to producing better code for a new project at the beginning
+  + This will probably save time in the long term
+
+- Investigate turning your code into a package
+
+- Refer to [style guides](https://style.tidyverse.org/)
+
+- Read about the subject

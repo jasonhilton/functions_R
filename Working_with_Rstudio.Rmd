@@ -1,0 +1,324 @@
+---
+title: "Working with R and RStudio"
+author: "Jason Hilton"
+institute: "University of Southampton"
+output:
+  xaringan::moon_reader:
+    css: ["default", "default-fonts", "custom.css"]
+    lib_dir: libs
+    nature:
+      highlightStyle: github
+      highlightLines: true
+      countIncrementalSlides: false
+---
+class: center, middle,inverse
+
+# RStudio
+
+
+```{r setup, message=F, warning=F, echo=F}
+library(ggplot2)
+library(magrittr)
+library(dplyr)
+library(knitr)
+library(tidyr)
+library(DiagrammeR)
+library(ggthemes)
+library(svglite)
+
+opts_chunk$set(fig.align="center",
+               fig.retina=2,message=F, warning=F,
+               fig_caption=F, echo=F)
+
+theme_set(theme_grey(base_size=18))
+```
+
+
+---
+# What is RStudio for? 
+
+R is a powerful standalone programming language for statistical analysis.
+
+However, the built-in Graphical User Interface (GUI) is rather minimal.
+
+- RStudio provides a powerful Integrated Development Environment for R
+- Syntax highlighting and checking ('linting')
+- Project organisation facilities
+- Code completion
+- Integration with a range of other tools
+  + Rmarkdown for integrated code and text documents
+  + Terminal window
+  + Facilities for python, javascript and stan files
+  + Debugging and profiling tools
+  + Integration with different graphical devices
+
+--
+
+Some may prefer a good text editor (Sublime, Geany) and the terminal,
+or another IDE.
+
+- Emacs - through the Emacs Speaks Statistics (ESS) package 
+- Visual studio
+
+
+--
+Jupyter notebooks are also R-friendly!
+
+---
+class: center, middle,inverse
+
+# Project Organisation
+
+
+---
+# Principles
+
+- Projects should be reproducible from start to finish
+- Projects should be documented
+
+---
+# Warning!
+
+
+
+> If the first line of your R script is
+
+> `setwd("C:\Users\jenny\path\that\only\I\have")`
+
+> I will come into your office and SET YOUR COMPUTER ON FIRE 🔥.
+
+From [Jenny Bryan's blog post.](https://www.tidyverse.org/blog/2017/12/workflow-vs-script/)
+
+--
+
+Not everyone agrees; this **is** a common idiom in R.
+
+Projects organised in this way are **not easily reproducible**.
+- 'Future me' won't be able to run this code if I have changed machine
+- Colleagues working on other machines will not be able to run this code
+- Confusing if different scripts are run from different paths
+
+---
+# Project organisation
+
+What is a sensible way of organising projects?
+
+- Create a top level folder for each project
+- All paths are written relative to this top level
+
+### Not this:
+
+```{R, eval=F, echo=T}
+
+read.csv("C:/obscure/path/to/some/random/project/data/file.csv")
+
+```
+
+### This
+
+```{R, eval=F,echo=T}
+read.csv("./data/file.csv")
+```
+
+
+---
+# Rstudio projects
+
+Rstudio helps with this structure through projects.
+
+- Create a new project in your project folder
+
+
+- When this project is open, Rstudio will automatically start R in this folder
+
+
+- Some settings can also be provided on a per-project basis
+
+
+--
+
+These tools help maintain a more reproducible workflow
+
+- You should be able to run the scripts that carry out your analysis from the command line from the top-level project folder
+
+
+```{bash, eval =F}
+cd path/to/my project
+Rscript scripts/create_viz.R
+```
+
+- *If you have a `setwd` command in your project, this will not work on other machines*
+
+---
+# Folder structure for simple projects
+
+
+.pull-left[
+<iframe src="Project_folder.html" height=1000 width=300 style="border:none;"></iframe>
+]
+
+
+.pull-right[
+
+- Top-level project folder
+
+<div style="line-height:130%;">
+    <br>
+</div>
+
+- The `R` folder will contain user-written functions for sourcing
+
+<div style="line-height:90%;">
+    <br>
+</div>
+
+- The `scripts` folder will contain the files which carry out the body of the work.
+
+<div style="line-height:10%;">
+    <br>
+</div>
+
+- Data stored locally can be saved in the `data` folder
+
+<div style="line-height:10%;">
+    <br>
+</div>
+
+- Results, including plots, are outputed to the `results` folder
+
+]
+
+
+
+---
+class: center, middle, inverse
+# Workflow
+
+
+---
+# Another Warning!
+
+> If the first line of your R script is
+
+> `rm(list = ls())`
+
+> I will come into your office and SET YOUR COMPUTER ON FIRE 🔥.
+
+From [Jenny Bryan's blog post.](https://www.tidyverse.org/blog/2017/12/workflow-vs-script/)
+
+---
+# Maintaining a clean environment
+
+The `rm(list=ls())` expression will remove all objects you have created from the global environment.
+
+
+--
+But anything added to your R environment by loading packages will remain!
+
+- Your analysis may not be reproducible
+
+
+
+--
+- **Restart R** when you restart an analysis
+- All libraries should be loaded at the top of your script
+- Do not save and load `.Rdata` when opening R
+
+
+--
+Environment managers can help with making sure package versions remain stable within projects
+
+
+- The [renv](https://rstudio.github.io/renv/articles/renv.html) package is one such manager
+
+
+
+---
+# Workflow outputs
+
+Save outputs at different stages of your analysis
+- Each script should create one output
+- The subsequent steps use outputs from previous steps
+
+
+.pull-left[
+- Save specific R objects using `saveRDS` rather than `save`
+- Load and assign data using `readRDS` rather than `load`
+
+
+- This makes it clear in a script where each data object has come from!
+- It also prevents overwriting existing `R` objects
+]
+.pull-right[
+```{r, eval=F,echo=T}
+saveRDS(an_object, 
+        file="file_name.rds")
+
+```
+
+```{r,eval=F,echo=T}
+loaded_object <- readRDS(
+  file="object.rds")
+```
+]
+
+
+--
+This allows you to build up an analysis pipeline, enabling each step to be treated in isolation.
+
+---
+class: middle, inverse
+# Naming conventions
+
+
+>    There are only two hard things in Computer Science: cache invalidation and  naming things.
+>   -- Phil Karlton
+
+[Via Martin Fowler](https://martinfowler.com/bliki/TwoHardThings.html)
+
+
+---
+# Use meaningful names
+
+Understanding code is much easier if functions and variables have meaningful names.
+
+### Obscure names
+```{r, echo=T,eval=F}
+anls(svdf)
+```
+
+
+--
+### Meaningful names
+```{r, echo=T, eval=F}
+calculate_hazard(survival_df)
+```
+
+
+--
+I would recommend doing this even if it is only you who will be using the code
+
+- It's good to get into good habits
+- You never know when code might be needed in other contexts
+
+
+
+---
+# Conventions
+
+- Try not to overwrite built-in variables or functions e.g. `mean` or `fit`
+- Use verbs to describe functions
+- Don't use dots in variable or function names
+ + Some legacy code has this notation
+ + However, it clashes with syntax for object-orientated programming in R
+- Spaces around operators (`+`, `-`, `/`, and so on), and after commas
+- Indent inside functions and `if` statements
+
+
+More information [here](http://adv-r.had.co.nz/Style.html)
+
+
+
+
+
+

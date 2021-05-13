@@ -1,0 +1,440 @@
+<!DOCTYPE html>
+<html lang="" xml:lang="">
+  <head>
+    <title>Working with R and RStudio</title>
+    <meta charset="utf-8" />
+    <meta name="author" content="Jason Hilton" />
+    <script src="libs/header-attrs-2.7/header-attrs.js"></script>
+    <link href="libs/remark-css-0.0.1/default.css" rel="stylesheet" />
+    <link href="libs/remark-css-0.0.1/default-fonts.css" rel="stylesheet" />
+    <link rel="stylesheet" href="custom.css" type="text/css" />
+  </head>
+  <body>
+    <textarea id="source">
+class: center, middle, inverse, title-slide
+
+# Working with R and RStudio
+### Jason Hilton
+### University of Southampton
+
+---
+
+class: center, middle,inverse
+
+# RStudio
+
+
+
+
+
+---
+# What is RStudio for? 
+
+R is a powerful standalone programming language for statistical analysis.
+
+However, the built-in Graphical User Interface (GUI) is rather minimal.
+
+- RStudio provides a powerful Integrated Development Environment for R
+- Syntax highlighting and checking ('linting')
+- Project organisation facilities
+- Code completion
+- Integration with a range of other tools
+  + Rmarkdown for integrated code and text documents
+  + Terminal window
+  + Facilities for python, javascript and stan files
+  + Debugging and profiling tools
+  + Integration with different graphical devices
+
+--
+
+Some may prefer a good text editor (Sublime, Geany) and the terminal,
+or another IDE.
+
+- Emacs - through the Emacs Speaks Statistics (ESS) package 
+- Visual studio
+
+
+--
+Jupyter notebooks are also R-friendly!
+
+---
+class: center, middle,inverse
+
+# Project Organisation
+
+
+---
+# Principles
+
+- Projects should be reproducible from start to finish
+- Projects should be documented
+
+---
+# Warning!
+
+
+
+&gt; If the first line of your R script is
+
+&gt; `setwd("C:\Users\jenny\path\that\only\I\have")`
+
+&gt; I will come into your office and SET YOUR COMPUTER ON FIRE 🔥.
+
+From [Jenny Bryan's blog post.](https://www.tidyverse.org/blog/2017/12/workflow-vs-script/)
+
+--
+
+Not everyone agrees; this **is** a common idiom in R.
+
+Projects organised in this way are **not easily reproducible**.
+- 'Future me' won't be able to run this code if I have changed machine
+- Colleagues working on other machines will not be able to run this code
+- Confusing if different scripts are run from different paths
+
+---
+# Project organisation
+
+What is a sensible way of organising projects?
+
+- Create a top level folder for each project
+- All paths are written relative to this top level
+
+### Not this:
+
+
+```r
+read.csv("C:/obscure/path/to/some/random/project/data/file.csv")
+```
+
+### This
+
+
+```r
+read.csv("./data/file.csv")
+```
+
+
+---
+# Rstudio projects
+
+Rstudio helps with this structure through projects.
+
+- Create a new project in your project folder
+
+
+- When this project is open, Rstudio will automatically start R in this folder
+
+
+- Some settings can also be provided on a per-project basis
+
+
+--
+
+These tools help maintain a more reproducible workflow
+
+- You should be able to run the scripts that carry out your analysis from the command line from the top-level project folder
+
+
+
+
+- *If you have a `setwd` command in your project, this will not work on other machines*
+
+---
+# Folder structure for simple projects
+
+
+.pull-left[
+&lt;iframe src="project_folder.html" height=1000 width=300 style="border:none;"&gt;&lt;/iframe&gt;
+]
+
+
+.pull-right[
+
+- Top-level project folder
+
+&lt;div style="line-height:130%;"&gt;
+    &lt;br&gt;
+&lt;/div&gt;
+
+- The `R` folder will contain user-written functions for sourcing
+
+&lt;div style="line-height:90%;"&gt;
+    &lt;br&gt;
+&lt;/div&gt;
+
+- The `scripts` folder will contain the files which carry out the body of the work.
+
+&lt;div style="line-height:10%;"&gt;
+    &lt;br&gt;
+&lt;/div&gt;
+
+- Data stored locally can be saved in the `data` folder
+
+&lt;div style="line-height:10%;"&gt;
+    &lt;br&gt;
+&lt;/div&gt;
+
+- Results, including plots, are outputed to the `results` folder
+
+]
+
+
+
+---
+class: center, middle, inverse
+# Workflow
+
+
+---
+# Another Warning!
+
+&gt; If the first line of your R script is
+
+&gt; `rm(list = ls())`
+
+&gt; I will come into your office and SET YOUR COMPUTER ON FIRE 🔥.
+
+From [Jenny Bryan's blog post.](https://www.tidyverse.org/blog/2017/12/workflow-vs-script/)
+
+---
+# Maintaining a clean environment
+
+The `rm(list=ls())` expression will remove all objects you have created from the global environment.
+
+
+--
+But anything added to your R environment by loading packages will remain!
+
+- Your analysis may not be reproducible
+
+
+
+--
+- **Restart R** when you restart an analysis
+- All libraries should be loaded at the top of your script
+- Do not save and load `.Rdata` when opening R
+
+
+--
+Environment managers can help with making sure package versions remain stable within projects
+
+
+- The [renv](https://rstudio.github.io/renv/articles/renv.html) package is one such manager
+
+
+
+---
+# Workflow outputs
+
+Save outputs at different stages of your analysis
+- Each script should create one output
+- The subsequent steps use outputs from previous steps
+
+
+.pull-left[
+- Save specific R objects using `saveRDS` rather than `save`
+- Load and assign data using `readRDS` rather than `load`
+
+
+- This makes it clear in a script where each data object has come from!
+- It also prevents overwriting existing `R` objects
+]
+.pull-right[
+
+```r
+saveRDS(an_object, 
+        file="file_name.rds")
+```
+
+
+```r
+loaded_object &lt;- readRDS(
+  file="object.rds")
+```
+]
+
+
+--
+This allows you to build up an analysis pipeline, enabling each step to be treated in isolation.
+
+---
+class: middle, inverse
+# Naming conventions
+
+
+&gt;    There are only two hard things in Computer Science: cache invalidation and  naming things.
+&gt;   -- Phil Karlton
+
+[Via Martin Fowler](https://martinfowler.com/bliki/TwoHardThings.html)
+
+
+---
+# Use meaningful names
+
+Understanding code is much easier if functions and variables have meaningful names.
+
+### Obscure names
+
+```r
+anls(svdf)
+```
+
+
+--
+### Meaningful names
+
+```r
+calculate_hazard(survival_df)
+```
+
+
+--
+I would recommend doing this even if it is only you who will be using the code
+
+- It's good to get into good habits
+- You never know when code might be needed in other contexts
+
+
+
+---
+# Conventions
+
+- Try not to overwrite built-in variables or functions e.g. `mean` or `fit`
+- Use verbs to describe functions
+- Don't use dots in variable or function names
+ + Some legacy code has this notation
+ + However, it clashes with syntax for object-orientated programming in R
+- Spaces around operators (`+`, `-`, `/`, and so on), and after commas
+- Indent inside functions and `if` statements
+
+
+More information [here](http://adv-r.had.co.nz/Style.html)
+
+
+
+
+
+
+    </textarea>
+<style data-target="print-only">@media screen {.remark-slide-container{display:block;}.remark-slide-scaler{box-shadow:none;}}</style>
+<script src="https://remarkjs.com/downloads/remark-latest.min.js"></script>
+<script>var slideshow = remark.create({
+"highlightStyle": "github",
+"highlightLines": true,
+"countIncrementalSlides": false
+});
+if (window.HTMLWidgets) slideshow.on('afterShowSlide', function (slide) {
+  window.dispatchEvent(new Event('resize'));
+});
+(function(d) {
+  var s = d.createElement("style"), r = d.querySelector(".remark-slide-scaler");
+  if (!r) return;
+  s.type = "text/css"; s.innerHTML = "@page {size: " + r.style.width + " " + r.style.height +"; }";
+  d.head.appendChild(s);
+})(document);
+
+(function(d) {
+  var el = d.getElementsByClassName("remark-slides-area");
+  if (!el) return;
+  var slide, slides = slideshow.getSlides(), els = el[0].children;
+  for (var i = 1; i < slides.length; i++) {
+    slide = slides[i];
+    if (slide.properties.continued === "true" || slide.properties.count === "false") {
+      els[i - 1].className += ' has-continuation';
+    }
+  }
+  var s = d.createElement("style");
+  s.type = "text/css"; s.innerHTML = "@media print { .has-continuation { display: none; } }";
+  d.head.appendChild(s);
+})(document);
+// delete the temporary CSS (for displaying all slides initially) when the user
+// starts to view slides
+(function() {
+  var deleted = false;
+  slideshow.on('beforeShowSlide', function(slide) {
+    if (deleted) return;
+    var sheets = document.styleSheets, node;
+    for (var i = 0; i < sheets.length; i++) {
+      node = sheets[i].ownerNode;
+      if (node.dataset["target"] !== "print-only") continue;
+      node.parentNode.removeChild(node);
+    }
+    deleted = true;
+  });
+})();
+(function() {
+  "use strict"
+  // Replace <script> tags in slides area to make them executable
+  var scripts = document.querySelectorAll(
+    '.remark-slides-area .remark-slide-container script'
+  );
+  if (!scripts.length) return;
+  for (var i = 0; i < scripts.length; i++) {
+    var s = document.createElement('script');
+    var code = document.createTextNode(scripts[i].textContent);
+    s.appendChild(code);
+    var scriptAttrs = scripts[i].attributes;
+    for (var j = 0; j < scriptAttrs.length; j++) {
+      s.setAttribute(scriptAttrs[j].name, scriptAttrs[j].value);
+    }
+    scripts[i].parentElement.replaceChild(s, scripts[i]);
+  }
+})();
+(function() {
+  var links = document.getElementsByTagName('a');
+  for (var i = 0; i < links.length; i++) {
+    if (/^(https?:)?\/\//.test(links[i].getAttribute('href'))) {
+      links[i].target = '_blank';
+    }
+  }
+})();
+// adds .remark-code-has-line-highlighted class to <pre> parent elements
+// of code chunks containing highlighted lines with class .remark-code-line-highlighted
+(function(d) {
+  const hlines = d.querySelectorAll('.remark-code-line-highlighted');
+  const preParents = [];
+  const findPreParent = function(line, p = 0) {
+    if (p > 1) return null; // traverse up no further than grandparent
+    const el = line.parentElement;
+    return el.tagName === "PRE" ? el : findPreParent(el, ++p);
+  };
+
+  for (let line of hlines) {
+    let pre = findPreParent(line);
+    if (pre && !preParents.includes(pre)) preParents.push(pre);
+  }
+  preParents.forEach(p => p.classList.add("remark-code-has-line-highlighted"));
+})(document);</script>
+
+<script>
+slideshow._releaseMath = function(el) {
+  var i, text, code, codes = el.getElementsByTagName('code');
+  for (i = 0; i < codes.length;) {
+    code = codes[i];
+    if (code.parentNode.tagName !== 'PRE' && code.childElementCount === 0) {
+      text = code.textContent;
+      if (/^\\\((.|\s)+\\\)$/.test(text) || /^\\\[(.|\s)+\\\]$/.test(text) ||
+          /^\$\$(.|\s)+\$\$$/.test(text) ||
+          /^\\begin\{([^}]+)\}(.|\s)+\\end\{[^}]+\}$/.test(text)) {
+        code.outerHTML = code.innerHTML;  // remove <code></code>
+        continue;
+      }
+    }
+    i++;
+  }
+};
+slideshow._releaseMath(document);
+</script>
+<!-- dynamically load mathjax for compatibility with self-contained -->
+<script>
+(function () {
+  var script = document.createElement('script');
+  script.type = 'text/javascript';
+  script.src  = 'https://mathjax.rstudio.com/latest/MathJax.js?config=TeX-MML-AM_CHTML';
+  if (location.protocol !== 'file:' && /^https?:/.test(script.src))
+    script.src  = script.src.replace(/^https?:/, '');
+  document.getElementsByTagName('head')[0].appendChild(script);
+})();
+</script>
+  </body>
+</html>

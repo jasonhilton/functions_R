@@ -1,0 +1,940 @@
+<!DOCTYPE html>
+<html lang="" xml:lang="">
+  <head>
+    <title>Introduction</title>
+    <meta charset="utf-8" />
+    <meta name="author" content="Jason Hilton" />
+    <script src="libs/header-attrs-2.7/header-attrs.js"></script>
+    <link href="libs/remark-css-0.0.1/default.css" rel="stylesheet" />
+    <link href="libs/remark-css-0.0.1/default-fonts.css" rel="stylesheet" />
+    <link rel="stylesheet" href="custom.css" type="text/css" />
+  </head>
+  <body>
+    <textarea id="source">
+class: center, middle, inverse, title-slide
+
+# Introduction
+### Jason Hilton
+### University of Southampton
+
+---
+
+class: inverse, center, middle
+
+# About this workshop
+
+---
+# Aims
+
+
+The aims of this workshop are to:
+
+1. Introduce a number of concepts that aid the development of an understanding of functions in R
+
+2. Equip you to write functions to carry out arbitrary tasks
+
+3. Provide guidelines for function writing in R
+
+4. Introduce approaches to functional programming in R
+
+
+---
+# Schedule
+
+We will discuss three basic topics, grouped into three 'lectures':
+
+1. Function Basics
+
+2. Principles of Function Writing
+
+3. Functional Programming
+
+
+
+---
+# Prerequisites
+
+- Basic knowledge of R
+  + Data structures (vectors, lists, dataframes)
+  + For Loops
+  + If statements
+- No prior knowledge of functions
+
+&gt; We will therefore start slowly
+
+
+--
+Many examples in the slides will be intentionally simple 
+
+- To illustrate the principles in question
+
+- To avoid relying on disciplinary knowledge that not all participants will have!
+
+
+
+
+---
+# Acknowledgements
+
+This course builds on material from a variety of sources:
+
+&gt; *Writing Scientific Software* by Suely Oliveira and David Stewart, CUP
+ 
+ 
+&gt; *Advanced R* by Hadley Wickham, (2nd Edition), CRC press
+ 
+
+&gt; *Clean Code* by Robert C. Martin, Prentice Hall
+ 
+
+&gt; Resources from *Software Carpentry*
+ 
+
+&gt; Documentation from base R and R packages `purrr`, `dplyr`, `tidyr`,  and `magrittr`
+
+
+---
+class: inverse, center, middle
+
+# Motivations
+
+
+
+---
+# What are Functions?
+
+A function is a collection of **instructions** for performing a particular task.
+
+Functions *typically* involve these elements:
+
+--
+### Arguments
+&gt; A function may have *arguments* (inputs) upon which it operates.
+
+
+--
+### Body
+&gt; A function will have a *body* which describes the computations that the functions must carry out
+
+
+--
+### Return Value
+&gt; A function may have a *return value* (output) that gives the result of computations
+
+
+
+---
+# A Simple Analogy
+
+In mathematics and statistics, we also have the concept of a function.
+
+A mathematical function can be thought of as a transformation:
+
+
+`\(y = f(x)\)`
+
+
+--
+Consider the familiar function below:
+
+$$
+f(x) = x^2
+$$
+
+In this case we have a function with an *argument* `\(x\)`  and an *output* of `\(x^2\)`.
+
+
+--
+We can evaluate this function for specific values of the argument:
+
+$$
+`\begin{aligned}
+f(2) = 4 \\
+f(3) = 9 \\
+\vdots
+\end{aligned}`
+$$
+
+Notice we have a distinction between the symbolic argument ( `\(x\)` ) we use to describe the function and the value it takes in particular cases ( `\(2,3, \dots\)` ).
+
+
+---
+# A Caveat
+
+Not all programming functions have arguments and outputs.
+
+
+### No outputs
+Some functions are used mainly for their **side effects**:
+
+--
+- Plotting functions
+  + An example in R is `plot`
+- Printing functions 
+- I/O (Input / Output) functions
+  + For instance, saving files to disk
+
+
+### No inputs
+
+Other code may not have (explicit) inputs.
+
+
+--
+- Functions that tell us something about the state of our system
+- An example you might be familiar with in R is `getwd`
+
+
+
+---
+# Why Write Functions?
+
+.pull-left[
+What looks wrong with the code on the right?
+
+- *This is code I wrote ~10 years ago*
+
+- *Don't worry about the code itself, but focus on what you can tell by looking at it*
+
+- *Note that the purple colour indicates raw numbers* 
+
+] 
+.pull-right[
+![](bad_code.jpg)
+
+]
+
+---
+# Why Write Functions?
+
+Functions are a vital part of writing **robust** and **reusable** scientific code.
+
+
+How do functions help us?
+
+
+--
+Functions:
+
+- Prevent replication
+
+
+- Allow particular aspects of code behaviour to be easily changed
+
+
+- Allow the reuse of pieces of code in other contexts
+
+
+- Serve as the building blocks for packages
+
+- Break your code down into units that can easily be debugged, tested, and altered
+
+
+---
+class: inverse, center, middle
+
+# Functions in R
+
+
+Much of this content is adapted from: 
+
+
+*Advanced R* by Hadley Wickham, (2nd Edition), CRC press
+
+This content is  available under a Creative Commons License:
+[http://creativecommons.org/licenses/by-nc-sa/4.0/](http://creativecommons.org/licenses/by-nc-sa/4.0/)
+
+---
+# Functions in R
+
+Let's take a look at a trivial function in R that you are unlikely to write in practice:
+
+
+```r
+square &lt;- function(x){
+  y &lt;- x ** 2 
+  return (y)
+}
+```
+
+
+--
+To create a function:
+- We use the keyword `function` to let R know what follows is a function definition
+
+
+- We include the **arguments** of a function between parenthesis directly after the function keyword
+  + Multiple arguments are separated by commas
+  
+  
+- We include the **body** of the function within curly braces `{}`
+
+
+- We can include a **return** statement to specify what the function should output
+
+
+---
+# Return statements
+
+Return statements are optional in R.
+
+
+--
+If no return statement is provided, a function will return the result of the last bit of R code in its body
+
+We can therefore rewrite our previous function:
+
+
+```r
+square &lt;- function(x){
+  x ** 2
+}
+```
+
+
+--
+The choice of whether to include `return` is really one of personal preference; both are equally valid.
+
+
+&gt; I prefer to use `return`, because it is explicit and makes code easier to read.
+  - It is then easier to scan scripts and distinguish functions from other statements in curly braces (e.g. `if` statements).
+
+
+
+
+---
+# Calling functions in R
+
+
+Once our function has been *created*, we can *use* a function by writing the function name, followed by the argument you wish to provide to it enclosed in parentheses:
+
+
+```r
+square(2)
+```
+
+```
+## [1] 4
+```
+
+This is known as **calling** the function.
+
+
+--
+- We can reuse functions as many times as we like
+
+- We can provide whichever arguments we desire to them
+
+
+```r
+square(42)
+```
+
+```
+## [1] 1764
+```
+
+```r
+square(11)
+```
+
+```
+## [1] 121
+```
+
+---
+# Components of R functions
+
+R functions consist of three components.
+
+
+--
+The **formals** or arguments to the function:
+
+
+```r
+formals(square)
+```
+
+```
+## $x
+```
+
+
+--
+The **body** of the function:
+
+```r
+body(square)
+```
+
+```
+## {
+##     x^2
+## }
+```
+
+
+--
+The **environment** of a function (which will require more explaining!):
+
+
+
+```r
+environment(square)
+```
+
+```
+## &lt;environment: R_GlobalEnv&gt;
+```
+
+---
+# Primitive Functions
+
+Before we move on, we should note that many built-in functions in R have a slightly different character.
+
+
+--
+This is because they are consist not of R code, but of an interface to underlying `C` functions.
+
+- `C` is a compiled programming language
+  + This means user-written code is turned into a lower-level set of computing instructions and optimised in advance
+  + `C` is much faster than pure R code
+  + It is also more difficult to read and write
+
+
+R functions that call `C` code directly are called **primitives**
+
+- They are irreducible, fundamental building blocks of the language.
+
+
+
+---
+# Variables and names in R
+In order to understand what the environment of a function does, we need to first understand a little more about assignment in R.
+
+Imagine we type the code below into the R console:
+
+
+
+```r
+a_vector &lt;- c(10,4,3,7)
+```
+
+
+This code creates an R object consisting of a vector of integers, and assigns the name `a_vector` to this object.
+
+
+### The Global Environment
+
+This name is contained within R's 'global environment'
+
+When we subsequently type the name `a_vector` into the console, the name `a_vector` is looked up in the global environment, and the object associated with it is retrieved.
+
+
+---
+# Try it
+
+
+Try running the code below.
+
+
+
+```r
+library(rlang)
+a &lt;- 453
+rlang::env_print()
+```
+
+
+You may need to install the `rlang` package if you don't have it already.
+
+
+```r
+install.packages("rlang")
+```
+
+
+
+---
+# Environments and functions
+
+R sessions can have more than just the global environment.
+
+
+--
+An environment serves as a container for a set of names assigned to particular R objects.
+
+
+--
+Each function has an enclosing environment - the environment in which it is created
+
+- For the function `square` we created above, we saw that the enclosing environment was the global environment
+
+
+
+```r
+environment(square)
+```
+
+```
+## &lt;environment: R_GlobalEnv&gt;
+```
+
+
+&gt; This will become more important later on
+
+---
+# What happens when you call a function?
+
+Our understanding of functions is helped by understanding what happens when a function is called.
+
+.pull-left[
+
+- When a function is called, an *execution environment* is created
+
+- Values supplied as arguments are assigned within the execution environment
+
+- Computations are carried out and any local variables are assigned
+
+- The function output is returned and the **execution environment is destroyed**
+
+]
+
+.pull-right[
+
+
+```r
+mean_1 &lt;- function(x){
+  sum_of_x &lt;- sum(x)
+  n &lt;- length(x)
+  return(sum_of_x / n)
+}
+
+mean_1(c(2,3,5,6,7))
+```
+
+```
+## [1] 4.6
+```
+
+```r
+print(n)
+```
+
+```
+## Error in print(n): object 'n' not found
+```
+]
+
+
+--
+&gt; Variables local to a function are no longer available once a function has returned
+
+---
+# Scoping
+
+Scoping describes the process of looking up the value associated with a name. R method is known as `Lexical Scoping`:
+
+- If a name is reference inside a function, to find it's value, R will first look inside the execution environment
+- If the variable referenced is not found, it will look inside the enclosing environment
+- If the variable is still not found, any 'higher' environments will also be checked untill the global environment is reached
+
+
+The example below demonstrates this in action. 
+What value will it return?
+
+```r
+x &lt;- 10 
+
+multiply &lt;- function(y){
+  x &lt;- 40
+  y * x
+}
+
+multiply(2)
+print(x)
+```
+
+
+---
+# Dynamic Scoping
+
+What value will the code below return?
+
+```r
+x &lt;- 10 
+
+multiply &lt;- function(y){
+  y * x
+}
+
+x &lt;- 20
+
+multiply(2)
+```
+
+
+
+---
+# Functions as objects
+
+Functions in R are objects, just as other vectors and dataframes are.
+
+
+--
+- In many respects, they behave in the same way as other R objects
+
+
+Creating a function is similar to creating a new variable
+
+```r
+a &lt;- 4
+b &lt;- function(x){
+  return (x + 1)
+}
+
+rlang::env_print()
+```
+
+```
+## &lt;environment: global&gt;
+## parent: &lt;environment: package:stats&gt;
+## bindings:
+##  * mean_1: &lt;fn&gt;
+##  * a: &lt;dbl&gt;
+##  * b: &lt;fn&gt;
+##  * square: &lt;fn&gt;
+##  * a_vector: &lt;dbl&gt;
+```
+
+
+
+---
+# Functions as objects
+We can store functions in lists and iterate over them, for example:
+
+
+```r
+x &lt;- rnorm(1000)
+
+functions &lt;- list(summary_1 = mean, summary_2 = median)
+
+for (func in functions){
+  print(func(x))
+}
+```
+
+```
+## [1] -0.02732654
+## [1] -0.05245969
+```
+
+
+
+
+---
+# Function Factories
+
+A consequence of this is that we can also return a function from another function, and provide functions as arguments to other functions.
+
+
+--
+An application of this is when we want to write more than one function carrying out the same calculations on different data or parameters:
+
+
+```r
+make_adder &lt;- function(y){
+  adder &lt;- function(x){
+    return(x + y)
+  }
+  return(adder)
+}
+
+add_10 &lt;- make_adder(10)
+add_4 &lt;- make_adder(4)
+
+c(add_10(1), add_4(3))
+```
+
+```
+## [1] 11  7
+```
+
+**Q** What is the enclosing environment of the function `add_4`?
+
+
+
+---
+# Lazy Evaluation
+
+Functions evaluate arguments **lazily**. 
+
+What does this mean? 
+
+- Arguments to functions will only be evaluated when they are referred to in the body
+
+
+
+```r
+lazy_function &lt;- function(x=rnorm(1e34534564)){
+  return("yawn")
+}
+
+lazy_function()
+```
+
+```
+## [1] "yawn"
+```
+
+
+---
+# Default Arguments
+
+Some functions will have arguments we will only want to change occasionally.
+
+- We can provide **default arguments** which will be used if the are not specified when the functions is called.
+
+
+--
+Example:
+
+```r
+get_surname &lt;- function(name, splitting_character=" "){
+  surname &lt;- strsplit(name, split=splitting_character,)[[1]][2]
+  return(surname)
+}
+get_surname("jason hilton")
+```
+
+```
+## [1] "hilton"
+```
+
+```r
+get_surname("jason/hilton", "/")
+```
+
+```
+## [1] "hilton"
+```
+
+
+If splitting character is not specified, the default value is used.
+
+---
+# Matching Arguments 
+
+We might want to restrict the users of our function to arguments coming from a set of specific values.
+
+We can do this using `match.args`:
+
+
+```r
+get_surname2 &lt;- function(name, splitting_character=c(" ", "/")){
+  match.arg(splitting_character)
+  surname &lt;- strsplit(name, split=splitting_character,)[[1]][2]
+  return(surname)
+}
+
+get_surname("Jason Hilton", "a")
+```
+
+```
+## [1] "son Hilton"
+```
+
+```r
+get_surname2("Jason Hilton", "a")
+```
+
+```
+## Error in match.arg(splitting_character): 'arg' should be one of " ", "/"
+```
+
+
+
+
+
+---
+# Dots ... 
+
+Another important tool concern cases when we don't know how many arguments we will get when we are writing a function.
+
+Here we can use the elipsis (`...`) to indicate to refer to a list of any additional arguments passed to the function.
+
+
+```r
+invert &lt;- function(x, ...){
+  dots &lt;- list(...)  
+  out &lt;- c()
+  for (item in dots){
+    out &lt;- c(out, 1/item)
+  }
+  return(out)
+}
+```
+
+
+```r
+invert(23,4,5,6)
+```
+
+```
+## [1] 0.2500000 0.2000000 0.1666667
+```
+
+```r
+invert(23,4,5,6,5,7)
+```
+
+```
+## [1] 0.2500000 0.2000000 0.1666667 0.2000000 0.1428571
+```
+
+(In reality we would just use a vector to do this!)
+
+---
+# Summary 
+
+During this session we have:
+
+
+- Defined some key terms:
+  + Function
+  + Argument
+  + Body
+  + Environment
+  + Primitive Function
+  
+- Understood what happens when a function is called
+
+- Learned some tools to help us write better functions
+  + Default arguments
+  + Argument matching
+  + Function factories
+
+    </textarea>
+<style data-target="print-only">@media screen {.remark-slide-container{display:block;}.remark-slide-scaler{box-shadow:none;}}</style>
+<script src="https://remarkjs.com/downloads/remark-latest.min.js"></script>
+<script>var slideshow = remark.create({
+"highlightStyle": "github",
+"highlightLines": true,
+"countIncrementalSlides": false
+});
+if (window.HTMLWidgets) slideshow.on('afterShowSlide', function (slide) {
+  window.dispatchEvent(new Event('resize'));
+});
+(function(d) {
+  var s = d.createElement("style"), r = d.querySelector(".remark-slide-scaler");
+  if (!r) return;
+  s.type = "text/css"; s.innerHTML = "@page {size: " + r.style.width + " " + r.style.height +"; }";
+  d.head.appendChild(s);
+})(document);
+
+(function(d) {
+  var el = d.getElementsByClassName("remark-slides-area");
+  if (!el) return;
+  var slide, slides = slideshow.getSlides(), els = el[0].children;
+  for (var i = 1; i < slides.length; i++) {
+    slide = slides[i];
+    if (slide.properties.continued === "true" || slide.properties.count === "false") {
+      els[i - 1].className += ' has-continuation';
+    }
+  }
+  var s = d.createElement("style");
+  s.type = "text/css"; s.innerHTML = "@media print { .has-continuation { display: none; } }";
+  d.head.appendChild(s);
+})(document);
+// delete the temporary CSS (for displaying all slides initially) when the user
+// starts to view slides
+(function() {
+  var deleted = false;
+  slideshow.on('beforeShowSlide', function(slide) {
+    if (deleted) return;
+    var sheets = document.styleSheets, node;
+    for (var i = 0; i < sheets.length; i++) {
+      node = sheets[i].ownerNode;
+      if (node.dataset["target"] !== "print-only") continue;
+      node.parentNode.removeChild(node);
+    }
+    deleted = true;
+  });
+})();
+(function() {
+  "use strict"
+  // Replace <script> tags in slides area to make them executable
+  var scripts = document.querySelectorAll(
+    '.remark-slides-area .remark-slide-container script'
+  );
+  if (!scripts.length) return;
+  for (var i = 0; i < scripts.length; i++) {
+    var s = document.createElement('script');
+    var code = document.createTextNode(scripts[i].textContent);
+    s.appendChild(code);
+    var scriptAttrs = scripts[i].attributes;
+    for (var j = 0; j < scriptAttrs.length; j++) {
+      s.setAttribute(scriptAttrs[j].name, scriptAttrs[j].value);
+    }
+    scripts[i].parentElement.replaceChild(s, scripts[i]);
+  }
+})();
+(function() {
+  var links = document.getElementsByTagName('a');
+  for (var i = 0; i < links.length; i++) {
+    if (/^(https?:)?\/\//.test(links[i].getAttribute('href'))) {
+      links[i].target = '_blank';
+    }
+  }
+})();
+// adds .remark-code-has-line-highlighted class to <pre> parent elements
+// of code chunks containing highlighted lines with class .remark-code-line-highlighted
+(function(d) {
+  const hlines = d.querySelectorAll('.remark-code-line-highlighted');
+  const preParents = [];
+  const findPreParent = function(line, p = 0) {
+    if (p > 1) return null; // traverse up no further than grandparent
+    const el = line.parentElement;
+    return el.tagName === "PRE" ? el : findPreParent(el, ++p);
+  };
+
+  for (let line of hlines) {
+    let pre = findPreParent(line);
+    if (pre && !preParents.includes(pre)) preParents.push(pre);
+  }
+  preParents.forEach(p => p.classList.add("remark-code-has-line-highlighted"));
+})(document);</script>
+
+<script>
+slideshow._releaseMath = function(el) {
+  var i, text, code, codes = el.getElementsByTagName('code');
+  for (i = 0; i < codes.length;) {
+    code = codes[i];
+    if (code.parentNode.tagName !== 'PRE' && code.childElementCount === 0) {
+      text = code.textContent;
+      if (/^\\\((.|\s)+\\\)$/.test(text) || /^\\\[(.|\s)+\\\]$/.test(text) ||
+          /^\$\$(.|\s)+\$\$$/.test(text) ||
+          /^\\begin\{([^}]+)\}(.|\s)+\\end\{[^}]+\}$/.test(text)) {
+        code.outerHTML = code.innerHTML;  // remove <code></code>
+        continue;
+      }
+    }
+    i++;
+  }
+};
+slideshow._releaseMath(document);
+</script>
+<!-- dynamically load mathjax for compatibility with self-contained -->
+<script>
+(function () {
+  var script = document.createElement('script');
+  script.type = 'text/javascript';
+  script.src  = 'https://mathjax.rstudio.com/latest/MathJax.js?config=TeX-MML-AM_CHTML';
+  if (location.protocol !== 'file:' && /^https?:/.test(script.src))
+    script.src  = script.src.replace(/^https?:/, '');
+  document.getElementsByTagName('head')[0].appendChild(script);
+})();
+</script>
+  </body>
+</html>

@@ -1,0 +1,605 @@
+---
+title: "Functional Programming"
+author: "Jason Hilton"
+institute: "University of Southampton"
+output:
+  xaringan::moon_reader:
+    lib_dir: libs
+    nature:
+      highlightStyle: github
+      highlightLines: true
+      countIncrementalSlides: false
+---
+class: inverse, center, middle
+
+# Intro to functional programming
+
+
+This discussion builds on material from:
+
+*Advanced R* by Hadley Wickham, (2nd Edition), CRC press
+
+This content is  available under a Creative Commons License:
+[http://creativecommons.org/licenses/by-nc-sa/4.0/](http://creativecommons.org/licenses/by-nc-sa/4.0/)
+
+---
+# What is functional programming
+
+Functionals are *functions* that take *functions* for arguments.
+
+Functional programming involves attacking problems by repeated operating data through the application of functions.
+
+- Applying functions to the result of functions is known as **composing** functions
+
+- Functional programming techniques work well with problems that can be divided up into stages
+
+- Functional programming techniques work well with problems that can be applied separately to different parts of the data and *parallelised*
+
+
+
+---
+# Pure functions
+
+Functional programming demands that functions be **pure**.
+
+Pure functions have:
+
+- Outputs that depend only on the values of their arguments
+- No side-effects; the only iteractions with the calling environment is through the output.
+
+
+--
+Why is this useful?
+  + Functions always give the same results when run with the same inputs
+  + This makes predicting code behaviour easier
+  + The dependencies of a functions are easily identified
+  + Functions can be analysed and tested in isolation
+  + Functions are more portable
+  
+
+Most of the time, you should probably be writing pure functions.
+
+
+
+---
+# Functional programming in R
+
+R is not strictly speaking a functional programming language (not all functions must be pure).
+
+- However, many problems can be effectively solved using functional programming techniques within R.
+
+- Loops are often slow in R - using functionals to apply functions to data elements can often be quicker.
+
+
+
+---
+# Examples of functionals in R
+
+
+
+The base functions `lapply`, `vapply` and `sapply` are good examples of functionals in R
+
+- These each take a function as an argument, and apply this function to each element of a data structure
+
+
+
+--
+The optimisation function `optim`, often used in fitting statistical models, is another example of a functional in R
+
+-  We write a function that returns the quantity we want to optimisesay, the negative log-likelihood of a model), with a vector of parameters as the first argument
+  
+- `optim` takes this function as an argument and iteratively find the parameter value that minimises the function
+
+
+---
+# Functional programming and the Tidyverse
+
+The `tidyverse` is a family of `r` packages that has grown hugely in popularity in recent years.
+
+
+- It provides a particular useful framework for functional programming in R
+
+- Each element of the tidyverse interacts nicely with other elements.
+
+- This means that functional programming can be combined with other desirable tools:
+  + Data manipulation
+  + Database interaction
+  + Plotting
+
+I will introduce the tidyverse in general, before talking about functional programming techinques.
+
+
+---
+class: center, middle,inverse
+
+# Tidy Philsophy
+
+
+
+
+```{r setup, message=F, warning=F, echo=F}
+
+library(knitr)
+
+library(DiagrammeR)
+library(ggthemes)
+library(gapminder)
+library(svglite)
+library(tidymodels)
+library(tidyverse)
+library(magrittr)
+
+opts_chunk$set(fig.align="center",
+               fig.retina=2,message=F, warning=F,
+               fig_caption=F, echo=T,eval=F)
+
+theme_set(theme_grey(base_size=18))
+```
+
+
+
+
+---
+# Tidy Data
+
+Tidy data (Wickham 2014) assumes:
+- Every column refers to a particular variable
+- Every row is a specific observation
+- Data collected at different levels of analysis / aggregation should be stored in different tables
+
+
+--
+
+
+- It is not always clear what should be considered a variable and what an observation (ibid)
+  + Are 'height' and 'width' two different variables?
+  + Or should this be separate measurement `value`, classified by a `dimension` variable?
+  
+
+--
+Sometimes this depends on the particular focus of the analysis
+
+
+---
+# Tidyverse Principles
+
+
+
+- It is **human centered**, i.e. the tidyverse is designed specifically to support the activities of a human data analyst
+
+- It is **consistent**, so that what you learn about one function or package can be applied to another, and the number of special cases that you need to remember is as small as possible
+
+- It is **composable**, allowing you to solve complex problems by breaking them down into small pieces, supporting a rapid cycle of exploratory iteration to find the best solution
+
+- It is **inclusive**, because the tidyverse is not just the collection of packages, but it is also the community of people who use them
+
+Source: [Tidyverse Principles](https://principles.tidyverse.org/unifying-principles.html)
+
+---
+# Tidyverse philosophy
+
+> [T]idy datasets are all alike but every messy dataset is messy in its own way.
+
+Wickham, H (2014) **Journal of Statistical Software ** 59 (1) p1-23. 
+
+Packages for manipulating and analysing data must make assumptions about the format of inputs.
+
+They must also make choices about how to output data.
+
+
+--
+Tidyverse packages all make the same assumptions about data input and output format.
+
+- This means output from functions from one package can form the inputs to functions from another package
+- This creates an *ecosystem* of packages that work well together
+
+
+
+[R for Data Science](https://r4ds.had.co.nz/) is a good general reference for working with this group of packages.
+
+
+---
+# Piping
+
+The pipe operator from the `magrittr` package enables the construction of step-by-step 'sentences' for data manipulations.
+
+- The `%>%` operators means "take the thing on the left, and pass it into the function on the right as first argument
+- The `%<>%` operator both pipes the item from the left-hand side to the right, and assigns the final result back to the initial variable. So  `df %<>%` means the same as `df <- df %>%`
+
+The three statements below are equivalent
+```{r, echo=T, eval=F}
+a <- 1:5
+a <- mean(a)
+a <- a %>% mean()
+a %<>% mean()
+```
+
+
+--
+- The `%T>%` allows plots to be created 'in the middle' of pipelines
+- Below, `a` is passed on to `mean` even though it is not the result of `plot`
+
+```{r, eval=F, echo=T}
+
+a %T>% plot() %>% mean()
+
+```
+
+---
+# Tidyselect
+
+
+Underlying tidyverse packages is a specialised sub-language (a Domain Specific Language) for selecting variables from dataframes.
+
+The `select` function from the `dplyr` package provides the best example of this.
+
+
+.pull-left[
+- The first argument to the `select` function gives the dataframe to be analysed
+
+
+- All subsequent arguments denote columns to select
+
+
+- The set of columns selected is the *union* of the set of arguments
+]
+
+.pull-right[
+```{r, eval=T, echo=T}
+iris %>% 
+  select(Sepal.Length, 
+         Sepal.Width) %>% 
+  colnames()
+```
+]
+
+Tidyselect syntax is not standard. Normally such code would give an error; Sepal.Length is not a defined variable except within the `iris` dataframe.
+
+
+
+---
+# Tidyselect helpers
+
+A range of helper functions and operators can make selection easier
+
+
+.pull-left[
+- The `-` operator selects everything except the following variable
+
+- The `:` allows ranges of columns (either by integer indices or names)
+
+- `starts_with` and `ends_with` allow particular sets to be captured
+
+- `where` helps select columns based on conditions
+]
+
+.pull-right[
+```{r, eval=T, echo=T}
+iris %>% 
+  select(starts_with("Sepal"),
+         -Sepal.Width) %>%
+  colnames()
+```
+
+```{r, eval=T, echo=T}
+iris %>% 
+  select(where(is_numeric)) %>%
+  colnames()
+```
+
+]
+
+
+
+
+
+
+---
+class: inverse,centre,middle
+
+# Tidyverse Packages
+
+
+---
+# Core Packages
+
+- `readr` for reading in data from a variety of packages
+- `tidyr` for the creation of tidy data
+- `dplyr` for manipulating and joining data
+- **`purrr` for functional programming**
+- `tibble` for nice-looking and nested `dataframes`
+- `magrittr` for piping operators
+- `ggplot2` for plotting
+
+--
+
+Packages within this ecosystem mean that analysis and visualisation code can be constructed in a consistent and interpretable  fashion by composing functions:
+
+```{r, echo=T, eval=F}
+
+read_csv("some_file.csv") %>% 
+  mutate(area = width * height) %>% 
+  pivot_longer(-group) %>%
+  group_by(date) %>% 
+  summarise(area=mean(area)) %>%
+  ggplot(aes(x=date, y= area)) + geom_line()
+
+```
+
+
+
+---
+# Tidyr
+
+Tidyr allows datasets to be converted between wide formats and long formats
+
+- Wide formats typically include values of at least one variable as column names
+
+The WorldPhones built-in R dataset is a good example of this
+
+```{r, echo=T, eval=T}
+data(WorldPhones)  # We need to do a bit of tidying first.
+WorldPhones %<>% as_tibble() %>% mutate(Year=rownames(WorldPhones))
+colnames(WorldPhones)
+```
+
+
+--
+```{r, echo=T, eval=T}
+WorldPhones %<>%
+  pivot_longer(-Year, names_to="Region", 
+               values_to="Phones")
+colnames(WorldPhones)
+```
+
+---
+# Dplyr
+
+Dplyr provides a wide range of handy tools for manipulating dataframes.
+
+
+
+.pull-left[
+- `mutate` creates new columns as a function of old ones
+
+- `group_by()` creates groups by values of one column
+
+- `summarise()` specifies how to reduce each group to a single row of data 
+]
+
+
+.pull-right[
+
+```{r, eval=T, echo=T}
+library(stringr)
+WorldPhones %<>% 
+  mutate(SuperRegion=
+           ifelse(
+          str_detect(Region, 
+                     "Amer"),
+             "America", 
+             "Rest of World"
+         )) %>%
+ group_by(SuperRegion,Year)%>% 
+ summarise(Phones=sum(Phones))
+
+```
+
+]
+
+
+To join dataframes on keys several `_join` functions are provided (`left`, `right`, `inner`, `full`)
+
+
+---
+# Purrr
+
+Purr provides tools for functional programming.
+
+- These can be useful to repeat the same set of operations on a list of objects
+
+--
+- Comparable with `lapply`, `sapply`, `vapply` etc in base R
+
+- Purrr includes a family functions starting with `map_` to iterate over vectors
+
+- The return type is determined by the suffix of the function: `dbl`, `lgl`, `df` and `chr`
+
+
+```{r,eval=T}
+list(x=runif(10), y=runif(10)) %>% map_dbl(mean)
+```
+
+
+--
+Multivariate versions of these functions also exist: `map2` and `pmap`
+
+
+
+---
+# Purrr - anonymous functions
+
+
+.pull-left[
+- We can use our own functions within the `map` functions
+
+- Sometimes we don't want to reuse our function, so we don't give it a name
+
+- We both define and use it on the same line
+
+- This code applies a softmax normalisation function to both the x and y vectors
+
+]
+
+.pull-right[
+
+```{r, eval=T}
+
+list(x=1:3, y=1:5) %>% 
+  map(function(x) exp(x) / 
+                  sum(exp(x)))
+```
+]
+
+---
+# Purrr - anonymous formula notations
+
+
+.pull-left[
+- A nonstandard, tidyverse-specific method of defining anonymous functions in purrr is to use formula notation
+
+- The dot character `.` in this notation stands for the current list element
+
+- Thus, each list element will each take the place of the dot in turn 
+
+- Both expressions below check whether the number 4 appears in `x` and `y`
+]
+
+.pull-right[
+
+```{r, eval=T}
+list(x=1:3, y=1:5) %>% 
+  map_lgl(~ 4 %in% .)
+list(x=1:3, y=1:5) %>% 
+  map_lgl(function(z) 4 %in% z)
+```
+]
+
+
+
+
+
+---
+# Disadvantages of tidy datasets
+
+Tidy data is advantageous in many contexts, but in some cases it may prove a hinderance.
+
+
+--
+Any project that involves lots of matrix multiplication can be easier outside the `tidyverse`
+  + Writing code for novel statistical estimators
+  + Matrix population models
+
+Converting to and from dataframes and matrices can be awkward.
+
+
+--
+Tidy data can take more space on disk than array equivalents
+- Database back-ends may make this less important
+
+
+---
+# Fitting and plotting multiple models
+
+The powerful functional programming tools within `purrr` can be combined with the ability of the `tibble` style dataframes to include nested list-columns. *(Example based on Healy, Data Visualisation)*.
+
+
+```{r, echo=T,eval=T}
+library(DT)
+nest_df <- gapminder %>% filter(continent!="Oceania") %>%
+  group_by(continent, year) %>% nest()
+nest_df
+```
+
+---
+# Fitting and plotting multiple models
+We can use `map` to fit a model to each of these, and tidy the result:
+
+```{r, echo=T, eval=T}
+
+nest_df %<>% 
+  mutate(model = map(data, 
+                     ~lm(lifeExp ~ log(gdpPercap), data=.)),
+         tidy_mod = map(model, tidy, conf.int=T))
+head(nest_df)
+```
+
+
+---
+# Fitting and plotting multiple models
+Finally, we can unnest the results and plot.
+
+```{r, echo=T, eval=T, fig.width=11, fig.height=4}
+
+nest_df %>% select(continent, year,tidy_mod) %>%
+  unnest(tidy_mod) %>% 
+  filter(term!="(Intercept)") %>%
+  ggplot(aes(x=year, y=estimate, colour=continent)) + 
+  geom_pointrange(aes(ymin=conf.low,ymax=conf.high),
+                  position=position_dodge(width=1))
+
+```
+
+---
+# Applications of Function
+
+In reality we might wish to fit a model that captures the temporal correlations in this relationship
+
+More useful applications might involve:
+
+- Testing performance of a model over several datasets
+  + Each dataset held as an element in a nested list
+  + Map over each dataset, fitting a model to each
+  + Map over each fitted model, applying a function which extracts a measure of performance
+- Produce forecasts for a series of countries
+  + Produce a nested dataset, where each element is one countries dataset
+  + Write a function to forecast trends for a single country
+  + Map over the datasets, applying the forecasting function to each
+  
+This workflow integrates well with e.g. the ggplot2 plotting library.
+
+---
+# Mapping over functions
+
+We can could also map over a list of functions, because functions behave the same as other R objects like dataframes
+
+- Use a function factory to create functions for fitting models with different parameters
+  + Say, degree of polynomial or smoothing hyperparameter
+- Map over these functions, using them as an input to another function that fits and assesses performance on a particular dataframe
+
+A framework for modelling:
+> `Tidymodels` and `parnsip` provide powerful tools for this way of working.
+
+
+
+
+---
+# The Furrr Package
+
+The [`furrr` package](https://furrr.futureverse.org/index.html) provide parallelised versions of purrr functions.
+
+- The data to be mapped over is broken into chunks and passed to different processors on your machine
+
+- Each processors applies the function to a different part of the data
+
+- The processors can work independently, at the same time
+
+- The results from each processor are combined to get the final result
+
+
+
+--
+This may be (considerably) faster, but it depends on:
+- Your machine
+- The overhead involved in transfering and recombining data
+- The nature of the computational task
+  + Not all tasks are parallelisable
+
+
+
+
+---
+# Summary
+
+In this session we have:
+
+- Defined terms surrounding functional programming
+
+- Introduced Tidyverse packages
+
+- Described the tools available within `purrr` for functional programming
+
+- Discussed how these could be applied to various modelling problems
+
+
+
